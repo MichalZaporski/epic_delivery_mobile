@@ -17,7 +17,7 @@ export default function CoursesScreen(navigation) {
   const [dataCourses, setDataCourses] = useState([]);
   const API_URL = URL;
   const params = navigation.route.params;
-  const [cart, setCart] = useState([]);
+  const [cart, setCart] = useState({});
 
   // fetching data (courses of particular restayrant)
   useEffect(() => {
@@ -29,6 +29,15 @@ export default function CoursesScreen(navigation) {
       .catch((error) => console.error(error))
       .finally(() => setLoading(false));
   }, []);
+
+  const changeCartStatus = (item_id) => {
+    if (cart.hasOwnProperty(item_id))
+      setCart((oldCart) => {
+        oldCart[item_id] += 1;
+        return { ...oldCart };
+      });
+    else setCart((oldCart) => ({ ...oldCart, [item_id]: 1 }));
+  };
 
   return (
     <View style={{ flex: 1 }}>
@@ -74,10 +83,8 @@ export default function CoursesScreen(navigation) {
               data={dataCourses}
               keyExtractor={(item) => item.id.toString()}
               renderItem={({ item }) => (
-                <TouchableOpacity
-                  onPress={() => {
-                    setCart((oldCart) => [...oldCart, item.id]);
-                  }}>
+                //chaning status of the cart
+                <TouchableOpacity onPress={() => changeCartStatus(item.id)}>
                   <View style={styles.singleCourse}>
                     <Text style={styles.courseTextName}>{item.name}</Text>
                     <Text style={styles.courseTextDescription}>
@@ -97,7 +104,7 @@ export default function CoursesScreen(navigation) {
       </ScrollView>
 
       <View style={styles.cartBottom}>
-        <Text>{cart}</Text>
+        <Text>{JSON.stringify(cart)}</Text>
       </View>
     </View>
   );
