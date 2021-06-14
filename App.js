@@ -1,18 +1,7 @@
 import React from "react";
-import {
-  StyleSheet,
-  Text,
-  View,
-  SafeAreaView,
-  Button,
-  Alert,
-  TouchableOpacity,
-  Platform,
-  StatusBar,
-  Dimensions,
-} from "react-native";
-import RestaurantsScreen from "./app/screens/RestaurantsScreen";
+import "react-native-gesture-handler";
+import { AppNavigator } from "./app/AppNavigator";
 
 export default function App() {
-  return <RestaurantsScreen />;
+  return <AppNavigator />;
 }

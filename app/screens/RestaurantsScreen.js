@@ -2,31 +2,30 @@ import { URL } from "../restApiUrl.js";
 import React, { useEffect, useState } from "react";
 import {
   Image,
-  ImageBackground,
   StyleSheet,
   View,
   Text,
   ActivityIndicator,
   FlatList,
   StatusBar,
-  Platform,
-  SafeAreaView,
+  Button,
+  TouchableOpacity,
 } from "react-native";
 
-export default function WelcomeScreen(props) {
+export default function RestaurantsScreen({ navigation }) {
   const [isLoading, setLoading] = useState(true);
   const [dataRestaurants, setDataRestaurants] = useState([]);
   const [dataCategories, setDataCategories] = useState([]);
   const API_URL = URL;
 
-  // fetching data from REST API
+  // fetching data (restaurants) from REST API
   useEffect(() => {
-    fetch(API_URL + "/api/v1/restaurants/search")
+    fetch(`${API_URL}/api/v1/restaurants/search`)
       .then((response) => response.json())
       .then((json) => setDataRestaurants(json))
       .catch((error) => console.error(error));
 
-    fetch(API_URL + "/api/v1/categories")
+    fetch(`${API_URL}/api/v1/categories`)
       .then((response) => response.json())
       .then((json) => setDataCategories(json))
       .catch((error) => console.error(error))
@@ -34,6 +33,7 @@ export default function WelcomeScreen(props) {
   }, []);
 
   // View
+
   return (
     <View style={styles.background}>
       <View style={styles.topBar}></View>
@@ -45,19 +45,38 @@ export default function WelcomeScreen(props) {
             data={dataRestaurants}
             keyExtractor={(item) => item.id.toString()}
             renderItem={({ item }) => (
-              <View style={styles.singleRestaurant}>
-                <Image
-                  style={styles.restaurantImage}
-                  source={{ uri: API_URL + item.image }}
-                />
-                <Text style={styles.restaurantsTextName}>{item.name}</Text>
-                <Text style={styles.restaurantsTextDesc}>
-                  {item.description}
-                </Text>
-                <Text style={styles.restaurantsTextAddress}>
-                  {item.city}, {item.street} {item.street_number}
-                </Text>
-              </View>
+              <TouchableOpacity
+                onPress={() =>
+                  navigation.navigate("Courses", {
+                    restaurant_id: item.id,
+                    name: item.name,
+                    address: `${item.city}, ${item.street} ${item.street_number}`,
+                    phone_number: item.phone_number,
+                    // gwiazdki i ilosc ocen
+                    image: item.image,
+                  })
+                }>
+                <View style={styles.singleRestaurant}>
+                  <Image
+                    style={styles.restaurantImage}
+                    source={{ uri: API_URL + item.image }}
+                  />
+                  <Text style={styles.restaurantsTextName}>{item.name}</Text>
+                  <Text style={styles.restaurantsTextDesc}>
+                    {item.description}
+                  </Text>
+                  <Text style={styles.restaurantsTextAddress}>
+                    {item.city}, {item.street} {item.street_number}
+                  </Text>
+                  <View style={styles.categoriesContainer}>
+                    {item.categories.map((category, key) => (
+                      <View key={key} style={styles.categoryView}>
+                        <Text style={styles.categoryText}>{category}</Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              </TouchableOpacity>
             )}
           />
         )}
@@ -71,54 +90,55 @@ const styles = StyleSheet.create({
   background: {
     paddingTop: StatusBar.currentHeight,
     flex: 1,
-    justifyContent: "flex-end",
     alignItems: "center",
-    backgroundColor: "white",
+    backgroundColor: "#fff",
   },
   topBar: {
     height: 70,
     width: "100%",
-    backgroundColor: "#A13941FF",
+    backgroundColor: "#a1190d",
+    borderBottomWidth: 1,
+    borderColor: "black",
   },
   bottomNavigation: {
     width: "100%",
     height: 70,
-    backgroundColor: "#F3DB74FF",
+    backgroundColor: "#f4f4f4",
+    borderTopWidth: 2,
+    borderColor: "#a1190d",
   },
   restaurantsContainer: {
     flex: 1,
     flexWrap: "nowrap",
-    paddingLeft: 15,
-    paddingRight: 15,
   },
   singleRestaurant: {
     flex: 1,
     alignItems: "center",
-    backgroundColor: "#fdfeff",
+    backgroundColor: "#f4f4f4",
     //padding: 20,
-    margin: 20,
+    marginVertical: 10,
+    marginHorizontal: 20,
     //opacity: 0.9,
-    borderRadius: 10,
-    borderWidth: 2,
+    borderRadius: 4,
+    borderWidth: 1,
     borderColor: "#afa5ab",
-    // minHeight: 200,
-    //overflow: "visible",
   },
   restaurantImage: {
     width: "100%",
     height: 120,
-    borderTopLeftRadius: 8,
-    borderTopRightRadius: 8,
+    borderTopLeftRadius: 2,
+    borderTopRightRadius: 2,
     borderBottomWidth: 2,
     borderColor: "#afa5ab",
   },
   restaurantsTextName: {
     fontSize: 25,
-    fontWeight: "bold",
     textAlign: "left",
     width: "90%",
     marginTop: 5,
     marginBottom: 5,
+    fontWeight: "500",
+    color: "#444b4c",
   },
   restaurantsTextDesc: {
     fontSize: 17,
@@ -126,11 +146,36 @@ const styles = StyleSheet.create({
     width: "90%",
     fontWeight: "300",
     marginBottom: 3,
+    color: "#444b4c",
   },
   restaurantsTextAddress: {
     fontSize: 19,
     textAlign: "left",
     width: "90%",
-    marginBottom: 5,
+    marginBottom: 14,
+    fontWeight: "400",
+    color: "#444b4c",
+  },
+  categoriesContainer: {
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    marginBottom: 12,
+    left: 10,
+    width: "100%",
+  },
+  categoryView: {
+    borderWidth: 1,
+    borderColor: "#fff",
+    backgroundColor: "#a1190d",
+    borderRadius: 30,
+    paddingVertical: 8,
+    paddingHorizontal: 13,
+    marginRight: 10,
+  },
+  categoryText: {
+    fontSize: 15,
+    fontWeight: "200",
+    color: "white",
   },
 });
