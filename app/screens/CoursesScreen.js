@@ -7,29 +7,52 @@ import {
   FlatList,
   StyleSheet,
   TouchableOpacity,
-  Dimensions,
+  TextInput,
   Image,
+  SafeAreaView,
 } from "react-native";
 import { URL } from "../restApiUrl.js";
+import numberToCurrency from "../helpers/NumberToCurrency";
+import { Picker } from "@react-native-picker/picker";
 
 export default function CoursesScreen(navigation) {
   const [isLoading, setLoading] = useState(true);
   const [dataCourses, setDataCourses] = useState([]);
+  const [cart, setCart] = useState({});
+  const [selectedCategory, setSelectedCategory] = useState(); // zmienic cos tu moze
+  const [minPrice, setMinPrice] = useState();
+  const [maxPirce, setMaxPrice] = useState();
+  const [newQueryAmonut, setNewQueryAmount] = useState(0);
   const API_URL = URL;
   const params = navigation.route.params;
-  const [cart, setCart] = useState({});
 
   // fetching data (courses of particular restayrant)
   useEffect(() => {
-    fetch(
-      `${API_URL}/api/v1/restaurants/${params.restaurant_id}/courses/search`
-    )
+    let queryURL = `${API_URL}/api/v1/restaurants/${params.restaurant_id}/courses/search?`;
+    if (
+      typeof selectedCategory != "undefined" &&
+      selectedCategory.length != 0
+    ) {
+      queryURL += `&category=${selectedCategory}`;
+    }
+
+    if (typeof minPrice != "undefined") {
+      queryURL += `&price_min=${minPrice}`;
+    }
+
+    if (typeof maxPirce != "undefined") {
+      queryURL += `&price_max=${maxPirce}`;
+    }
+    // console.log(queryURL);
+
+    fetch(queryURL)
       .then((response) => response.json())
       .then((json) => setDataCourses(json))
       .catch((error) => console.error(error))
       .finally(() => setLoading(false));
-  }, []);
+  }, [newQueryAmonut]);
 
+  // adding items to the cart
   const changeCartStatus = (item_id) => {
     if (cart.hasOwnProperty(item_id))
       setCart((oldCart) => {
@@ -39,9 +62,28 @@ export default function CoursesScreen(navigation) {
     else setCart((oldCart) => ({ ...oldCart, [item_id]: 1 }));
   };
 
+  // displaying items in a cart (bootom view)
+  const displayCartItems = (items) => {
+    // length == 2 is when cart object is {}
+    if (JSON.stringify(items).length == 2) {
+      return "Add items to the cart.";
+    } else {
+      let result = "";
+      // key - course id, value - quantity
+      for (let [key, value] of Object.entries(items)) {
+        let course = dataCourses.find((c) => c.id == key);
+
+        result += `${value} x: ${course.name} ${numberToCurrency(
+          course.price * value
+        )}\n`;
+      }
+      return result;
+    }
+  };
+
   return (
     <View style={{ flex: 1 }}>
-      <ScrollView>
+      <SafeAreaView style={{ flex: 1 }}>
         <Image
           style={styles.restaurantImage}
           source={{ uri: API_URL + params.image }}
@@ -75,6 +117,39 @@ export default function CoursesScreen(navigation) {
           </View>
         </View>
 
+        <View style={styles.filter}>
+          <Picker
+            style={styles.picker}
+            selectedValue={selectedCategory}
+            onValueChange={(itemValue, itemIndex) =>
+              setSelectedCategory(itemValue)
+            }>
+            <Picker.Item label="Category" value="" />
+            {params.categories.map((item, index) => {
+              return <Picker.Item label={item} value={item} key={index} />;
+            })}
+          </Picker>
+          <TextInput
+            onChangeText={setMinPrice}
+            style={styles.placeholderPrice}
+            placeholder="Min. price"
+            keyboardType="numeric"
+          />
+          <TextInput
+            style={styles.placeholderPrice}
+            onChangeText={setMaxPrice}
+            placeholder="Max. price"
+            keyboardType="numeric"
+          />
+          <TouchableOpacity
+            onPress={() => setNewQueryAmount(newQueryAmonut + 1)}>
+            <Image
+              style={styles.searchImage}
+              source={require("../assets/search.png")}
+            />
+          </TouchableOpacity>
+        </View>
+
         <View style={styles.coursesContainer}>
           {isLoading ? (
             <ActivityIndicator />
@@ -90,7 +165,9 @@ export default function CoursesScreen(navigation) {
                     <Text style={styles.courseTextDescription}>
                       {item.description}
                     </Text>
-                    <Text style={styles.courseTextPrice}>{item.price}</Text>
+                    <Text style={styles.courseTextPrice}>
+                      {numberToCurrency(item.price)}
+                    </Text>
                   </View>
                   <Image
                     style={styles.plusImage}
@@ -101,11 +178,21 @@ export default function CoursesScreen(navigation) {
             />
           )}
         </View>
-      </ScrollView>
+      </SafeAreaView>
 
-      <View style={styles.cartBottom}>
-        <Text>{JSON.stringify(cart)}</Text>
-      </View>
+      <TouchableOpacity>
+        <View style={styles.cartBottom}>
+          <Image
+            style={styles.cartImage}
+            source={require("../assets/cart.png")}
+          />
+          <Text style={styles.cartText}>{displayCartItems(cart)}</Text>
+          <Image
+            style={styles.arrowImage}
+            source={require("../assets/right_arrow.png")}
+          />
+        </View>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -155,6 +242,31 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     fontSize: 16,
   },
+  filter: {
+    padding: 12,
+    flexDirection: "row",
+    backgroundColor: "#fff",
+  },
+  picker: {
+    borderWidth: 1,
+    borderColor: "#afa5ab",
+    padding: 5,
+    marginHorizontal: 10,
+    width: "25%",
+    color: "#444b4c",
+  },
+  placeholderPrice: {
+    borderWidth: 1,
+    borderColor: "#afa5ab",
+    padding: 5,
+    marginHorizontal: 10,
+    width: "25%",
+    color: "#444b4c",
+  },
+  searchImage: {
+    width: 35,
+    height: 35,
+  },
   coursesContainer: {
     flex: 1,
     alignItems: "center",
@@ -195,8 +307,31 @@ const styles = StyleSheet.create({
     bottom: 20,
   },
   cartBottom: {
-    height: 85,
+    height: 110,
     borderTopWidth: 2,
     borderColor: "#a1190d",
+    overflow: "scroll",
+    justifyContent: "center",
+  },
+  cartImage: {
+    width: 50,
+    height: 50,
+    position: "absolute",
+    left: 20,
+    top: 30,
+  },
+  cartText: {
+    marginVertical: 5,
+    paddingLeft: 90,
+    fontSize: 17,
+    fontWeight: "500",
+    color: "#444b4c",
+  },
+  arrowImage: {
+    width: 60,
+    height: 60,
+    position: "absolute",
+    right: 8,
+    top: 25,
   },
 });

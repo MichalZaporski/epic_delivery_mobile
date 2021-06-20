@@ -36,7 +36,9 @@ export default function RestaurantsScreen({ navigation }) {
 
   return (
     <View style={styles.background}>
-      <View style={styles.topBar}></View>
+      <View style={styles.topBar}>
+        <Text style={styles.epicText}>Epic delivery</Text>
+      </View>
       <View style={styles.restaurantsContainer}>
         {isLoading ? (
           <ActivityIndicator />
@@ -46,14 +48,16 @@ export default function RestaurantsScreen({ navigation }) {
             keyExtractor={(item) => item.id.toString()}
             renderItem={({ item }) => (
               <TouchableOpacity
+                // data for CourseScreen
                 onPress={() =>
                   navigation.navigate("Courses", {
                     restaurant_id: item.id,
                     name: item.name,
                     address: `${item.city}, ${item.street} ${item.street_number}`,
                     phone_number: item.phone_number,
-                    // gwiazdki i ilosc ocen
+                    // gwiazdki i ilosc ocen dodac@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
                     image: item.image,
+                    categories: item.categories,
                   })
                 }>
                 <View style={styles.singleRestaurant}>
@@ -99,6 +103,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#a1190d",
     borderBottomWidth: 1,
     borderColor: "black",
+    justifyContent: "center",
+  },
+  epicText: {
+    color: "#fff",
+    paddingLeft: 20,
+    fontSize: 25,
+    fontWeight: 300,
   },
   bottomNavigation: {
     width: "100%",
