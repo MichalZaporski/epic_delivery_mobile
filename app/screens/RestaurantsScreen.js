@@ -38,6 +38,10 @@ export default function RestaurantsScreen({ navigation }) {
     <View style={styles.background}>
       <View style={styles.topBar}>
         <Text style={styles.epicText}>Epic delivery</Text>
+        <Image
+          style={styles.hamburgerMenuImage}
+          source={require("../assets/hamburger_menu.png")}
+        />
       </View>
       <View style={styles.restaurantsContainer}>
         {isLoading ? (
@@ -109,7 +113,14 @@ const styles = StyleSheet.create({
     color: "#fff",
     paddingLeft: 20,
     fontSize: 25,
-    fontWeight: 300,
+    fontWeight: "300",
+  },
+  hamburgerMenuImage: {
+    position: "absolute",
+    width: 40,
+    height: 40,
+    right: 20,
+    top: 15,
   },
   bottomNavigation: {
     width: "100%",

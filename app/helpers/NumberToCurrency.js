@@ -1,4 +1,4 @@
 export default function numberToCurrency(price) {
-  price = Number(price).toFixed(2);
-  return `${price} zł`;
+  const priceFixed = Number(price).toFixed(2);
+  return `${priceFixed} zł`;
 }

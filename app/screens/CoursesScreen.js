@@ -15,7 +15,7 @@ import { URL } from "../restApiUrl.js";
 import numberToCurrency from "../helpers/NumberToCurrency";
 import { Picker } from "@react-native-picker/picker";
 
-export default function CoursesScreen(navigation) {
+export default function CoursesScreen({ route, navigation }) {
   const [isLoading, setLoading] = useState(true);
   const [dataCourses, setDataCourses] = useState([]);
   const [cart, setCart] = useState({});
@@ -24,7 +24,7 @@ export default function CoursesScreen(navigation) {
   const [maxPirce, setMaxPrice] = useState();
   const [newQueryAmonut, setNewQueryAmount] = useState(0);
   const API_URL = URL;
-  const params = navigation.route.params;
+  const params = route.params;
 
   // fetching data (courses of particular restayrant)
   useEffect(() => {
@@ -83,7 +83,7 @@ export default function CoursesScreen(navigation) {
 
   return (
     <View style={{ flex: 1 }}>
-      <SafeAreaView style={{ flex: 1 }}>
+      <View style={{ flex: 1 }}>
         <Image
           style={styles.restaurantImage}
           source={{ uri: API_URL + params.image }}
@@ -178,9 +178,14 @@ export default function CoursesScreen(navigation) {
             />
           )}
         </View>
-      </SafeAreaView>
+      </View>
 
-      <TouchableOpacity>
+      <TouchableOpacity
+        onPress={() =>
+          navigation.navigate("Checkout", {
+            cart: cart,
+          })
+        }>
         <View style={styles.cartBottom}>
           <Image
             style={styles.cartImage}
@@ -310,7 +315,7 @@ const styles = StyleSheet.create({
     height: 110,
     borderTopWidth: 2,
     borderColor: "#a1190d",
-    overflow: "scroll",
+    overflow: "hidden",
     justifyContent: "center",
   },
   cartImage: {
