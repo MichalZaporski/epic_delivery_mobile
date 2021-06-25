@@ -1,24 +1,34 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   View,
   ScrollView,
   Text,
-  ActivityIndicator,
-  FlatList,
   StyleSheet,
   TouchableOpacity,
   TextInput,
-  Image,
-  Button,
-  TouchableWithoutFeedback,
-  Keyboard,
   Switch,
 } from "react-native";
 import numberToCurrency from "../helpers/NumberToCurrency";
 import { URL } from "../restApiUrl.js";
 import { Formik } from "formik";
 import colors from "../styles/colors.js";
-//import { Switch } from "@ant-design/react-native";
+import * as yup from "yup";
+
+const reviewSchema = yup.object({
+  order: yup.object({
+    city: yup.string().max(35, "City name must be at most 35 characters!"),
+    street: yup.string().max(35, "Street name must be at most 35 characters!"),
+    street_number: yup
+      .string()
+      .max(8, "Street nr must be at most 8 characters!"),
+    phone_number: yup
+      .string()
+      .required("Phone nr is required!")
+      .min(7, "Phone nr must be at least 7 characters!")
+      .max(11, "Phone nr must be at most 11 characters!"),
+    note: yup.string().max(50, "Note must be at most 50 characters!"),
+  }),
+});
 
 export default function CheckoutScreen({ route, navigation }) {
   const [isPending, setIsPending] = useState(false);
@@ -74,111 +84,166 @@ export default function CheckoutScreen({ route, navigation }) {
   };
 
   return (
-    <View style={styles.orderContainer}>
-      <Text style={styles.startText}>Collect Epic order!</Text>
-      {displayCourses(params.cart, params.courses)}
-      <View style={styles.summaryView}>
-        <Text style={styles.summaryText}>
-          Summary: {numberToCurrency(countCummary(params.cart, params.courses))}
-        </Text>
-      </View>
+    <ScrollView>
+      <View style={styles.orderContainer}>
+        <Text style={styles.startText}>Collect Epic order!</Text>
+        {displayCourses(params.cart, params.courses)}
+        <View style={styles.summaryView}>
+          <Text style={styles.summaryText}>
+            Summary:{" "}
+            {numberToCurrency(countCummary(params.cart, params.courses))}
+          </Text>
+        </View>
 
-      <Text style={styles.textOne}>Fill in the details!</Text>
+        <Text style={styles.textOne}>Fill in the details!</Text>
 
-      <Formik
-        style={{ flex: 1 }}
-        initialValues={{
-          order: {
-            city: "",
-            street: "",
-            street_number: "",
-            phone_number: "",
-            note: "",
-            items: params.cart,
-            personal_pickup: false,
-          },
-        }}
-        onSubmit={(values) => handleSubmit(values)}>
-        {({ handleChange, setFieldValue, handleSubmit, values }) => (
-          <View style={styles.form}>
-            <View style={styles.switchContainer}>
-              <Text style={styles.pickupText}>Wanna pick up personally?</Text>
-              <Switch
-                trackColor={{ false: "#767577", true: colors.fontGray }}
-                thumbColor={isPersonalPickup ? colors.mainMaroon : "#f4f3f4"}
-                onValueChange={() => {
-                  setIsPersonalPickup(!isPersonalPickup);
-                  setFieldValue(
-                    "order.personal_pickup",
-                    !values.order.personal_pickup
-                  );
-                }}
-                value={isPersonalPickup}
-              />
-            </View>
-            {!isPersonalPickup && (
+        <Formik
+          validationSchema={reviewSchema}
+          style={{ flex: 1 }}
+          initialValues={{
+            order: {
+              city: "",
+              street: "",
+              street_number: "",
+              phone_number: "",
+              note: "",
+              items: params.cart,
+              personal_pickup: false,
+            },
+          }}
+          //onSubmit={(values) => console.log(values)}>
+          onSubmit={(values) => handleSubmit(values)}>
+          {({
+            handleChange,
+            setFieldValue,
+            handleSubmit,
+            handleBlur,
+            errors,
+            touched,
+            values,
+          }) => (
+            <View style={styles.form}>
+              <View style={styles.switchContainer}>
+                <Text style={styles.pickupText}>Wanna pick up personally?</Text>
+                <Switch
+                  trackColor={{ false: "#767577", true: colors.fontGray }}
+                  thumbColor={isPersonalPickup ? colors.mainMaroon : "#f4f3f4"}
+                  onValueChange={() => {
+                    setIsPersonalPickup(!isPersonalPickup);
+                    setFieldValue(
+                      "order.personal_pickup",
+                      !values.order.personal_pickup
+                    );
+                  }}
+                  value={isPersonalPickup}
+                />
+              </View>
+              {!isPersonalPickup && (
+                <View style={{ width: "100%", alignItems: "center" }}>
+                  <TextInput
+                    style={styles.orderInput}
+                    onChangeText={handleChange("order.city")}
+                    placeholder="City name"
+                    value={values.order.city}
+                    onBlur={handleBlur("order.city")}
+                  />
+                  <Text style={{ color: colors.mainMaroon }}>
+                    {errors.order &&
+                      touched.order &&
+                      touched.order.city &&
+                      errors.order.city}
+                  </Text>
+                </View>
+              )}
+
+              {!isPersonalPickup && (
+                <View style={{ width: "100%", alignItems: "center" }}>
+                  <TextInput
+                    style={styles.orderInput}
+                    onChangeText={handleChange("order.street")}
+                    placeholder="Street name"
+                    value={values.order.street}
+                    onBlur={handleBlur("order.street")}
+                  />
+                  <Text style={{ color: colors.mainMaroon }}>
+                    {errors.order &&
+                      touched.order &&
+                      touched.order.street &&
+                      errors.order.street}
+                  </Text>
+                </View>
+              )}
+
+              {!isPersonalPickup && (
+                <View style={{ width: "100%", alignItems: "center" }}>
+                  <TextInput
+                    style={styles.orderInput}
+                    onChangeText={handleChange("order.street_number")}
+                    placeholder="Street number"
+                    value={values.order.street_number}
+                    onBlur={handleBlur("order.street_number")}
+                  />
+                  <Text style={{ color: colors.mainMaroon }}>
+                    {errors.order &&
+                      touched.order &&
+                      touched.order.street_number &&
+                      errors.order.street_number}
+                  </Text>
+                </View>
+              )}
               <TextInput
                 style={styles.orderInput}
-                onChangeText={handleChange("order.city")}
-                placeholder="City name"
-                value={values.order.city}
+                onChangeText={handleChange("order.phone_number")}
+                placeholder="Phone number"
+                value={values.order.phone_number}
+                onBlur={handleBlur("order.phone_number")}
               />
-            )}
-
-            {!isPersonalPickup && (
-              <TextInput
-                style={styles.orderInput}
-                onChangeText={handleChange("order.street")}
-                placeholder="Street name"
-                value={values.order.street}
-              />
-            )}
-
-            {!isPersonalPickup && (
-              <TextInput
-                style={styles.orderInput}
-                onChangeText={handleChange("order.street_number")}
-                placeholder="Street number"
-                value={values.order.street_number}
-              />
-            )}
-            <TextInput
-              style={styles.orderInput}
-              onChangeText={handleChange("order.phone_number")}
-              placeholder="Phone number"
-              value={values.order.phone_number}
-            />
-            <TextInput
-              style={styles.orderInput}
-              onChangeText={handleChange("order.note")}
-              placeholder="Note for your order"
-              value={values.order.note}
-            />
-
-            {!isPending && (
-              <TouchableOpacity
-                style={styles.submit}
-                onPress={handleSubmit}
-                title="Order">
-                <Text style={styles.submitText}>Order</Text>
-              </TouchableOpacity>
-            )}
-
-            {isPending && (
-              <TouchableOpacity style={styles.submit}>
-                <Text style={styles.submitText}>Ordering...</Text>
-              </TouchableOpacity>
-            )}
-
-            {error && (
-              <Text style={styles.courseText}>
-                Something went wrong... try again later.
+              <Text style={{ color: colors.mainMaroon }}>
+                {errors.order &&
+                  touched.order &&
+                  touched.order.phone_number &&
+                  errors.order.phone_number}
               </Text>
-            )}
-          </View>
-        )}
-      </Formik>
-    </View>
+
+              <TextInput
+                style={styles.orderInput}
+                onChangeText={handleChange("order.note")}
+                placeholder="Note for your order"
+                value={values.order.note}
+                onBlur={handleBlur("order.note")}
+              />
+              <Text style={{ color: colors.mainMaroon }}>
+                {errors.order &&
+                  touched.order &&
+                  touched.order.note &&
+                  errors.order.note}
+              </Text>
+
+              {!isPending && (
+                <TouchableOpacity
+                  style={styles.submit}
+                  onPress={handleSubmit}
+                  title="Order">
+                  <Text style={styles.submitText}>Order</Text>
+                </TouchableOpacity>
+              )}
+
+              {isPending && (
+                <TouchableOpacity style={styles.submit}>
+                  <Text style={styles.submitText}>Ordering...</Text>
+                </TouchableOpacity>
+              )}
+
+              {error && (
+                <Text style={styles.courseText}>
+                  Something went wrong... try again later.
+                </Text>
+              )}
+            </View>
+          )}
+        </Formik>
+      </View>
+    </ScrollView>
   );
 }
 
