@@ -12,15 +12,18 @@ import {
   Button,
   TouchableWithoutFeedback,
   Keyboard,
+  Switch,
 } from "react-native";
 import numberToCurrency from "../helpers/NumberToCurrency";
 import { URL } from "../restApiUrl.js";
 import { Formik } from "formik";
 import colors from "../styles/colors.js";
+//import { Switch } from "@ant-design/react-native";
 
 export default function CheckoutScreen({ route, navigation }) {
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState(false);
+  const [isPersonalPickup, setIsPersonalPickup] = useState(false);
   const params = route.params;
   const [items, setItems] = useState(params.cart);
   const API_URL = URL;
@@ -72,6 +75,7 @@ export default function CheckoutScreen({ route, navigation }) {
 
   return (
     <View style={styles.orderContainer}>
+      <Text style={styles.startText}>Collect Epic order!</Text>
       {displayCourses(params.cart, params.courses)}
       <View style={styles.summaryView}>
         <Text style={styles.summaryText}>
@@ -80,6 +84,7 @@ export default function CheckoutScreen({ route, navigation }) {
       </View>
 
       <Text style={styles.textOne}>Fill in the details!</Text>
+
       <Formik
         style={{ flex: 1 }}
         initialValues={{
@@ -90,29 +95,53 @@ export default function CheckoutScreen({ route, navigation }) {
             phone_number: "",
             note: "",
             items: params.cart,
+            personal_pickup: false,
           },
         }}
         onSubmit={(values) => handleSubmit(values)}>
-        {({ handleChange, handleBlur, handleSubmit, values }) => (
+        {({ handleChange, setFieldValue, handleSubmit, values }) => (
           <View style={styles.form}>
-            <TextInput
-              style={styles.orderInput}
-              onChangeText={handleChange("order.city")}
-              placeholder="City name"
-              value={values.order.city}
-            />
-            <TextInput
-              style={styles.orderInput}
-              onChangeText={handleChange("order.street")}
-              placeholder="Street name"
-              value={values.order.street}
-            />
-            <TextInput
-              style={styles.orderInput}
-              onChangeText={handleChange("order.street_number")}
-              placeholder="Street number"
-              value={values.order.street_number}
-            />
+            <View style={styles.switchContainer}>
+              <Text style={styles.pickupText}>Wanna pick up personally?</Text>
+              <Switch
+                trackColor={{ false: "#767577", true: colors.fontGray }}
+                thumbColor={isPersonalPickup ? colors.mainMaroon : "#f4f3f4"}
+                onValueChange={() => {
+                  setIsPersonalPickup(!isPersonalPickup);
+                  setFieldValue(
+                    "order.personal_pickup",
+                    !values.order.personal_pickup
+                  );
+                }}
+                value={isPersonalPickup}
+              />
+            </View>
+            {!isPersonalPickup && (
+              <TextInput
+                style={styles.orderInput}
+                onChangeText={handleChange("order.city")}
+                placeholder="City name"
+                value={values.order.city}
+              />
+            )}
+
+            {!isPersonalPickup && (
+              <TextInput
+                style={styles.orderInput}
+                onChangeText={handleChange("order.street")}
+                placeholder="Street name"
+                value={values.order.street}
+              />
+            )}
+
+            {!isPersonalPickup && (
+              <TextInput
+                style={styles.orderInput}
+                onChangeText={handleChange("order.street_number")}
+                placeholder="Street number"
+                value={values.order.street_number}
+              />
+            )}
             <TextInput
               style={styles.orderInput}
               onChangeText={handleChange("order.phone_number")}
@@ -155,9 +184,17 @@ export default function CheckoutScreen({ route, navigation }) {
 
 const styles = StyleSheet.create({
   orderContainer: {
+    paddingTop: 50,
     flex: 1,
     alignItems: "center",
     backgroundColor: "#fff",
+  },
+  startText: {
+    color: colors.fontGray,
+    fontSize: 32,
+    fontWeight: "600",
+    alignSelf: "flex-start",
+    marginLeft: "5%",
   },
   singularCourse: {
     width: "90%",
@@ -177,7 +214,7 @@ const styles = StyleSheet.create({
   summaryView: {
     width: "100%",
     backgroundColor: colors.backgroundWhite,
-    paddingLeft: 30,
+    paddingLeft: 50,
     paddingVertical: 4,
     marginTop: 15,
     borderTopWidth: 2,
@@ -190,18 +227,31 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   textOne: {
-    marginTop: 15,
+    marginTop: 25,
+    marginBottom: 10,
     color: colors.fontGray,
     fontSize: 22,
     fontWeight: "600",
+    alignSelf: "flex-start",
+    marginLeft: "5%",
+    textDecorationLine: "underline",
   },
   form: {
     flex: 1,
     width: "100%",
     alignItems: "center",
   },
+  switchContainer: {
+    flexDirection: "row",
+    alignSelf: "flex-start",
+    marginLeft: "5%",
+  },
+  pickupText: {
+    fontSize: 16,
+    marginRight: 16,
+  },
   orderInput: {
-    width: "80%",
+    width: "90%",
     height: 35,
     borderWidth: 1,
     marginVertical: 10,

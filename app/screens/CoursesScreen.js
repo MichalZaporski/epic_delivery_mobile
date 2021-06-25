@@ -105,14 +105,14 @@ export default function CoursesScreen({ route, navigation }) {
                 style={styles.starImage}
                 source={require("../assets/star.png")}
               />
-              <Text style={styles.opinionText}>4/5</Text>
+              <Text style={styles.opinionText}>{params.opinion}/5</Text>
             </View>
             <View style={styles.displayInRow}>
               <Image
                 style={styles.starImage}
                 source={require("../assets/people.png")}
               />
-              <Text style={styles.opinionText}>11</Text>
+              <Text style={styles.opinionText}>{params.opinions_number}</Text>
             </View>
           </View>
         </View>
@@ -184,6 +184,7 @@ export default function CoursesScreen({ route, navigation }) {
         onPress={() =>
           navigation.navigate("Checkout", {
             cart: cart,
+            courses: dataCourses,
           })
         }>
         <View style={styles.cartBottom}>

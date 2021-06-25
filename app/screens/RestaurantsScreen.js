@@ -59,7 +59,8 @@ export default function RestaurantsScreen({ navigation }) {
                     name: item.name,
                     address: `${item.city}, ${item.street} ${item.street_number}`,
                     phone_number: item.phone_number,
-                    // gwiazdki i ilosc ocen dodac@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+                    opinion: item.opinion,
+                    opinions_number: item.opinions_number,
                     image: item.image,
                     categories: item.categories,
                   })
