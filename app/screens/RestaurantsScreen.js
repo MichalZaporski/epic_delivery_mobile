@@ -8,19 +8,58 @@ import {
   ActivityIndicator,
   FlatList,
   StatusBar,
-  Button,
+  Modal,
   TouchableOpacity,
+  TextInput,
 } from "react-native";
+import colors from "../styles/colors.js";
+import { Formik } from "formik";
+import * as yup from "yup";
+import { Picker } from "@react-native-picker/picker";
 
 export default function RestaurantsScreen({ navigation }) {
   const [isLoading, setLoading] = useState(true);
   const [dataRestaurants, setDataRestaurants] = useState([]);
   const [dataCategories, setDataCategories] = useState([]);
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [restaurantName, setRestaurantName] = useState("");
+  const [cityName, setCityName] = useState("");
+  const [selectedRaiting, setSelectedRaiting] = useState("");
+  const [newQueryAmonut, setNewQueryAmount] = useState(0);
   const API_URL = URL;
+  const raiting_notes = ["1", "2", "3", "4", "5"];
+
+  const categoriesFilter = (categories) => {
+    display_text = "";
+    for (const category of categories) {
+      display_text += "";
+    }
+  };
 
   // fetching data (restaurants) from REST API
   useEffect(() => {
-    fetch(`${API_URL}/api/v1/restaurants/search`)
+    let queryURL = `${API_URL}/api/v1/restaurants/search?`;
+
+    if (selectedCategory.length > 0) {
+      queryURL += `&category_name=${selectedCategory}`;
+    }
+
+    if (restaurantName.length > 0) {
+      queryURL += `&name=${restaurantName}`;
+    }
+
+    if (cityName.length > 0) {
+      queryURL += `&city=${cityName}`;
+    }
+
+    if (selectedRaiting.length > 0) {
+      queryURL += `&opinion=${selectedRaiting}`;
+    }
+
+    // console.log(queryURL);
+
+    fetch(queryURL)
       .then((response) => response.json())
       .then((json) => setDataRestaurants(json))
       .catch((error) => console.error(error));
@@ -30,9 +69,7 @@ export default function RestaurantsScreen({ navigation }) {
       .then((json) => setDataCategories(json))
       .catch((error) => console.error(error))
       .finally(() => setLoading(false));
-  }, []);
-
-  // View
+  }, [newQueryAmonut]);
 
   return (
     <View style={styles.background}>
@@ -90,7 +127,98 @@ export default function RestaurantsScreen({ navigation }) {
           />
         )}
       </View>
-      <View style={styles.bottomNavigation}></View>
+      <View style={styles.bottomNavigation}>
+        <TouchableOpacity onPress={() => setFilterModalVisible(true)}>
+          <Image
+            source={require("../assets/maps.png")}
+            style={styles.filterImage}
+          />
+        </TouchableOpacity>
+        <Modal
+          animationType="slide"
+          visible={filterModalVisible}
+          transparent={true}>
+          <View style={styles.filterModal}>
+            <TouchableOpacity onPress={() => setFilterModalVisible(false)}>
+              <Image
+                style={styles.xImage}
+                source={require("../assets/x.png")}
+              />
+            </TouchableOpacity>
+
+            <Text style={styles.filterText}>Choose category:</Text>
+            <Picker
+              style={styles.picker}
+              selectedValue={selectedCategory}
+              onValueChange={(itemValue, itemIndex) => {
+                setSelectedCategory(itemValue);
+              }}>
+              <Picker.Item label="Category" value="" />
+              {dataCategories.map((item, index) => {
+                return (
+                  <Picker.Item
+                    label={item.category_name}
+                    value={item.category_name}
+                    key={index.id}
+                  />
+                );
+              })}
+            </Picker>
+
+            <Text style={styles.filterText}>Restaurant name::</Text>
+            <TextInput
+              onChangeText={setRestaurantName}
+              style={styles.filterInput}
+              placeholder="Ex.: panda"
+              value={restaurantName}
+            />
+
+            <Text style={styles.filterText}>City name:</Text>
+            <TextInput
+              onChangeText={setCityName}
+              style={styles.filterInput}
+              placeholder="Ex.: Poznań"
+              value={cityName}
+            />
+
+            <Text style={styles.filterText}>Minimal rating:</Text>
+            <Picker
+              style={styles.picker}
+              selectedValue={selectedRaiting}
+              onValueChange={(itemValue, itemIndex) => {
+                setSelectedRaiting(itemValue);
+              }}>
+              <Picker.Item label="Raiting" value="" />
+              {raiting_notes.map((item, index) => {
+                return <Picker.Item label={item} value={item} key={index.id} />;
+              })}
+            </Picker>
+
+            <TouchableOpacity
+              style={styles.submit}
+              onPress={() => {
+                setFilterModalVisible(false);
+                setNewQueryAmount(newQueryAmonut + 1);
+              }}>
+              <Text style={styles.submitText}>Search</Text>
+            </TouchableOpacity>
+          </View>
+        </Modal>
+
+        <TouchableOpacity onPress={() => setFilterModalVisible(true)}>
+          <Image
+            source={require("../assets/filter.png")}
+            style={styles.filterImage}
+          />
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => setFilterModalVisible(true)}>
+          <Image
+            source={require("../assets/person.png")}
+            style={styles.filterImage}
+          />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -129,6 +257,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#f4f4f4",
     borderTopWidth: 2,
     borderColor: "#a1190d",
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
   },
   restaurantsContainer: {
     flex: 1,
@@ -200,5 +331,57 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "200",
     color: "white",
+  },
+  filterImage: {
+    width: 40,
+    height: 40,
+  },
+  filterModal: {
+    height: "auto",
+    width: "95%",
+    margin: "auto",
+    backgroundColor: colors.backgroundWhite,
+    borderRadius: 25,
+    borderWidth: 5,
+    borderColor: colors.mainMaroon,
+    padding: 15,
+  },
+  picker: {
+    width: "70%",
+    fontSize: 15,
+    borderColor: colors.mainMaroon,
+  },
+  filterInput: {
+    borderBottomWidth: 1,
+    borderColor: colors.mainMaroon,
+    fontSize: 15,
+  },
+  filterText: {
+    marginTop: 20,
+    marginBottom: 4,
+    fontSize: 18,
+  },
+  submit: {
+    width: "60%",
+    height: 35,
+    backgroundColor: colors.mainMaroon,
+    borderRadius: 4,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 50,
+    marginBottom: 15,
+    marginHorizontal: "auto",
+  },
+  submitText: {
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "400",
+  },
+  xImage: {
+    position: "absolute",
+    width: 20,
+    height: 20,
+    top: 10,
+    right: 10,
   },
 });

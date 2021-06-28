@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
   View,
-  ScrollView,
   Text,
   ActivityIndicator,
   FlatList,
@@ -9,7 +8,6 @@ import {
   TouchableOpacity,
   TextInput,
   Image,
-  SafeAreaView,
 } from "react-native";
 import { URL } from "../restApiUrl.js";
 import numberToCurrency from "../helpers/NumberToCurrency";
