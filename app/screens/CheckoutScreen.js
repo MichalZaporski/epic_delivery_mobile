@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
     paddingTop: 50,
     flex: 1,
     alignItems: "center",
-    backgroundColor: "#fff",
+    //backgroundColor: "#fff",
   },
   startText: {
     color: colors.fontGray,

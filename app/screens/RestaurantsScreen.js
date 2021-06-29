@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import colors from "../styles/colors.js";
 import { Picker } from "@react-native-picker/picker";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function RestaurantsScreen({ navigation }) {
   const [isLoading, setLoading] = useState(true);
@@ -66,10 +67,10 @@ export default function RestaurantsScreen({ navigation }) {
     <View style={styles.background}>
       <View style={styles.topBar}>
         <Text style={styles.epicText}>Epic delivery</Text>
-        <Image
+        {/* <Image
           style={styles.hamburgerMenuImage}
           source={require("../assets/hamburger_menu.png")}
-        />
+        /> */}
       </View>
       <View style={styles.restaurantsContainer}>
         {isLoading ? (
@@ -130,7 +131,9 @@ export default function RestaurantsScreen({ navigation }) {
           visible={filterModalVisible}
           transparent={true}>
           <View style={styles.filterModal}>
-            <TouchableOpacity onPress={() => setFilterModalVisible(false)}>
+            <TouchableOpacity
+              style={styles.xImageContainer}
+              onPress={() => setFilterModalVisible(false)}>
               <Image
                 style={styles.xImage}
                 source={require("../assets/x.png")}
@@ -156,7 +159,7 @@ export default function RestaurantsScreen({ navigation }) {
               })}
             </Picker>
 
-            <Text style={styles.filterText}>Restaurant name::</Text>
+            <Text style={styles.filterText}>Restaurant name:</Text>
             <TextInput
               onChangeText={setRestaurantName}
               style={styles.filterInput}
@@ -328,19 +331,24 @@ const styles = StyleSheet.create({
     height: 40,
   },
   filterModal: {
+    position: "absolute",
+    bottom: 130,
+    left: "2.5%",
     height: "auto",
     width: "95%",
     margin: "auto",
     backgroundColor: colors.backgroundWhite,
     borderRadius: 25,
-    borderWidth: 5,
+    borderWidth: 4,
     borderColor: colors.mainMaroon,
     padding: 15,
   },
   picker: {
-    width: "70%",
+    width: "50%",
     fontSize: 15,
     borderColor: colors.mainMaroon,
+    borderWidth: 1,
+    height: 25,
   },
   filterInput: {
     borderBottomWidth: 1,
@@ -348,7 +356,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   filterText: {
-    marginTop: 20,
+    marginTop: 25,
     marginBottom: 4,
     fontSize: 18,
   },
@@ -362,17 +370,20 @@ const styles = StyleSheet.create({
     marginTop: 50,
     marginBottom: 15,
     marginHorizontal: "auto",
+    alignSelf: "center",
   },
   submitText: {
     color: "#fff",
     fontSize: 20,
     fontWeight: "400",
   },
-  xImage: {
+  xImageContainer: {
     position: "absolute",
+    top: 20,
+    right: 20,
+  },
+  xImage: {
     width: 20,
     height: 20,
-    top: 10,
-    right: 10,
   },
 });
