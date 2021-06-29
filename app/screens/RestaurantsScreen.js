@@ -13,8 +13,6 @@ import {
   TextInput,
 } from "react-native";
 import colors from "../styles/colors.js";
-import { Formik } from "formik";
-import * as yup from "yup";
 import { Picker } from "@react-native-picker/picker";
 
 export default function RestaurantsScreen({ navigation }) {
@@ -29,13 +27,6 @@ export default function RestaurantsScreen({ navigation }) {
   const [newQueryAmonut, setNewQueryAmount] = useState(0);
   const API_URL = URL;
   const raiting_notes = ["1", "2", "3", "4", "5"];
-
-  const categoriesFilter = (categories) => {
-    display_text = "";
-    for (const category of categories) {
-      display_text += "";
-    }
-  };
 
   // fetching data (restaurants) from REST API
   useEffect(() => {
@@ -212,7 +203,7 @@ export default function RestaurantsScreen({ navigation }) {
           />
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => setFilterModalVisible(true)}>
+        <TouchableOpacity onPress={() => navigation.navigate("User")}>
           <Image
             source={require("../assets/person.png")}
             style={styles.filterImage}
