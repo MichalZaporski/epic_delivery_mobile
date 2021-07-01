@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   ScrollView,
@@ -10,9 +10,10 @@ import {
 } from "react-native";
 import numberToCurrency from "../helpers/NumberToCurrency";
 import { URL } from "../restApiUrl.js";
-import { Formik } from "formik";
 import colors from "../styles/colors.js";
+import { Formik } from "formik";
 import * as yup from "yup";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const reviewSchema = yup.object({
   order: yup.object({
@@ -34,9 +35,25 @@ export default function CheckoutScreen({ route, navigation }) {
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState(false);
   const [isPersonalPickup, setIsPersonalPickup] = useState(false);
+  const [userId, setUserId] = useState(null);
   const params = route.params;
   const [items, setItems] = useState(params.cart);
   const API_URL = URL;
+
+  useEffect(() => {
+    getId();
+  }, []);
+
+  const getId = async () => {
+    try {
+      const id = await AsyncStorage.getItem("id");
+      if (id !== null) {
+        setUserId(id);
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
 
   const handleSubmit = (values) => {
     setIsPending(true);
@@ -58,10 +75,10 @@ export default function CheckoutScreen({ route, navigation }) {
   };
 
   const displayCourses = (cart, courses) => {
-    const display_text = courses.map((course) => {
+    const display_text = courses.map((course, key) => {
       if (course.id in cart) {
         return (
-          <View style={styles.singularCourse}>
+          <View style={styles.singularCourse} key={key}>
             <Text style={styles.courseText}>
               {cart[course.id]} x: {course.name} -{" "}
               {numberToCurrency(course.price * cart[course.id])}
@@ -102,6 +119,7 @@ export default function CheckoutScreen({ route, navigation }) {
           style={{ flex: 1 }}
           initialValues={{
             order: {
+              user_id: "",
               city: "",
               street: "",
               street_number: "",
@@ -112,7 +130,11 @@ export default function CheckoutScreen({ route, navigation }) {
             },
           }}
           //onSubmit={(values) => console.log(values)}>
-          onSubmit={(values) => handleSubmit(values)}>
+          onSubmit={(values) => {
+            values.order.user_id = userId;
+            //console.log(JSON.stringify(values));
+            handleSubmit(values);
+          }}>
           {({
             handleChange,
             setFieldValue,
@@ -197,6 +219,7 @@ export default function CheckoutScreen({ route, navigation }) {
                 placeholder="Phone number"
                 value={values.order.phone_number}
                 onBlur={handleBlur("order.phone_number")}
+                keyboardType="numeric"
               />
               <Text style={{ color: colors.mainMaroon }}>
                 {errors.order &&
@@ -222,7 +245,10 @@ export default function CheckoutScreen({ route, navigation }) {
               {!isPending && (
                 <TouchableOpacity
                   style={styles.submit}
-                  onPress={handleSubmit}
+                  onPress={() => {
+                    handleSubmit();
+                    navigation.navigate("Restaurants");
+                  }}
                   title="Order">
                   <Text style={styles.submitText}>Order</Text>
                 </TouchableOpacity>

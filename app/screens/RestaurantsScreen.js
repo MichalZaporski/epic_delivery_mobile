@@ -153,7 +153,7 @@ export default function RestaurantsScreen({ navigation }) {
                   <Picker.Item
                     label={item.category_name}
                     value={item.category_name}
-                    key={index.id}
+                    key={index}
                   />
                 );
               })}
@@ -184,7 +184,7 @@ export default function RestaurantsScreen({ navigation }) {
               }}>
               <Picker.Item label="Raiting" value="" />
               {raiting_notes.map((item, index) => {
-                return <Picker.Item label={item} value={item} key={index.id} />;
+                return <Picker.Item label={item} value={item} key={index} />;
               })}
             </Picker>
 
